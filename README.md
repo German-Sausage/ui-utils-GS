@@ -1,4 +1,4 @@
-# UI-Utils is a client-side mod for exploit hunting in Minecraft Java editiod
+# UI-Utils is a client-side mod for exploit hunting in Minecraft Java edition
 
 This is a complete rewrite inspired by https://github.com/Coderx-Gamer/ui-utils
 
