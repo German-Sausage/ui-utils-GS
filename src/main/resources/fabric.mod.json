@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "ui_utils",
+  "version": "${version}",
+  "name": "UI Utils",
+  "description": "The New and Improved Client-Side Exploit Hunting Mod!",
+  "authors": ["MrBreakNFix"],
+  "contact": {},
+  "license": "All-Rights-Reserved",
+  "icon": "assets/ui_utils/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.mrbreaknfix.ui_utils.UiUtils"
+    ],
+    "preLaunch": [
+        "com.mrbreaknfix.ui_utils.PreInit"
+    ]
+  },
+  "mixins": [
+    "ui_utils.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-api": "*",
+    "minecraft": "${minecraft_version}"
+  },
+  "custom": {
+    "modmenu:clientsideOnly": true,
+    "modmenu:api": false
+  },
+  "accessWidener": "ui_utils.accesswidener"
+}

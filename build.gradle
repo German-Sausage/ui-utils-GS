@@ -1,0 +1,229 @@
+import net.fabricmc.loom.api.mappings.layered.MappingsNamespace
+
+plugins {
+    id 'fabric-loom' version '1.12-SNAPSHOT'
+    id 'maven-publish'
+    id 'com.diffplug.spotless' version '8.0.0'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}
+
+// the p.IIC manager runtime dependencies
+configurations {
+    piicRuntime
+}
+
+loom {
+    accessWidenerPath = file("src/main/resources/ui_utils.accesswidener")
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    implementation("org.java-websocket:Java-WebSocket:1.6.0")
+    include("org.java-websocket:Java-WebSocket:1.6.0")
+
+    modCompileOnly 'com.google.code.gson:gson:2.10.1'
+
+    //todo: re-write and re-implement
+//    modImplementation(group: 'com.mrbreaknfix', name: 'breakery-device-java', version: '1.0.0')
+//    include(group: 'com.mrbreaknfix', name: 'breakery-device-java', version: '1.0.0')
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
+
+    // Add dependencies to our new 'piicRuntime' configuration.
+    piicRuntime 'org.java-websocket:Java-WebSocket:1.6.0'
+    piicRuntime 'com.google.code.gson:gson:2.10.1'
+}
+
+
+// compile generator tools in the tool package
+tasks.register('compileGeneratorTools', JavaCompile) {
+    group = 'build'
+    source = sourceSets.main.java
+    include 'com/mrbreaknfix/ui_utils/tool/**'
+    classpath = sourceSets.main.compileClasspath
+    destinationDirectory = file("$buildDir/classes/java/generatorTools")
+}
+
+// generate GeneratedPacketRegistry.java from JAR and inject into source
+tasks.register('generatePacketRegistry', JavaExec) {
+    group = 'build'
+    description = 'Generates the packet constructor registry class.'
+    dependsOn compileGeneratorTools
+    mainClass = 'com.mrbreaknfix.ui_utils.tool.UiUtilsPacketRegistrarGeneratorFinal'
+    classpath = sourceSets.main.compileClasspath + files(compileGeneratorTools.destinationDirectory)
+    def outputDir = file("src/main/java/com/mrbreaknfix/ui_utils/packet")
+    def minecraftJarCollection = loom.getMinecraftJarsCollection(MappingsNamespace.NAMED)
+    inputs.files(minecraftJarCollection)
+    outputs.dir(outputDir)
+
+    doFirst {
+        def minecraftJarFile = minecraftJarCollection.getSingleFile()
+        args = [outputDir.absolutePath, minecraftJarFile.absolutePath]
+    }
+}
+
+// generate PacketNameUtil.java from the local mappings
+tasks.register('generatePacketNameMap', JavaExec) {
+    group = 'build'
+    description = 'Generates the packet name mapping utility class.'
+    dependsOn compileGeneratorTools
+    mainClass = 'com.mrbreaknfix.ui_utils.tool.PacketNameMapGenerator'
+    classpath = files(compileGeneratorTools.destinationDirectory)
+    def outputDir = file("src/main/java/com/mrbreaknfix/ui_utils/packet")
+
+    // get mappings dependency configuration.
+    def mappingsFileCollection = configurations.mappings
+    inputs.files(mappingsFileCollection)
+    outputs.dir(outputDir)
+
+    doFirst {
+        def mappingsFile = mappingsFileCollection.getSingleFile()
+        args = [outputDir.absolutePath, mappingsFile.absolutePath]
+    }
+}
+
+
+// configure dependencies main compile
+tasks.named('compileJava') {
+    dependsOn 'spotlessApply'
+
+    dependsOn generatePacketRegistry, generatePacketNameMap
+    exclude 'com/mrbreaknfix/ui_utils/tool/**'
+}
+
+
+project.afterEvaluate {
+    tasks.named('sourcesJar').configure {
+        dependsOn generatePacketRegistry, generatePacketNameMap
+    }
+}
+
+
+// compilation task for the p.IIC server
+tasks.register('compilePiicServerJava', JavaCompile) {
+    source = sourceSets.main.java
+    include 'com/mrbreaknfix/ui_utils/pIIC/server/**'
+    classpath = configurations.piicRuntime
+    destinationDirectory = file("$buildDir/classes/java/piic")
+}
+
+// build the fat JAR for the p.IIC manager.
+tasks.register('piicJar', Jar) {
+    dependsOn compilePiicServerJava
+    archiveClassifier = 'piic-manager'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from compilePiicServerJava.destinationDirectory
+    from {
+        configurations.piicRuntime.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    manifest {
+        attributes 'Main-Class': 'com.mrbreaknfix.ui_utils.pIIC.server.PIICServer'
+    }
+}
+
+// Extract variables locally to satisfy the Configuration Cache
+def modVersion = project.version.toString()
+def mcVersion = project.minecraft_version.toString()
+def loaderVer = project.loader_version.toString()
+
+processResources {
+    inputs.property "version", modVersion
+    inputs.property "minecraft_version", mcVersion
+    inputs.property "loader_version", loaderVer
+
+    // Use the archive file directly from the task to avoid script object references
+    from(piicJar.archiveFile) {
+        rename { "p.IIC-manager.jar" }
+        into 'assets/ui_utils/bin'
+    }
+
+    filteringCharset "UTF-8"
+    filesMatching("fabric.mod.json") {
+        // Use the local variables here, NOT 'project.version'
+        expand "version": modVersion,
+                "minecraft_version": mcVersion,
+                "loader_version": loaderVer
+    }
+}
+
+def targetJavaVersion = 21
+tasks.withType(JavaCompile).configureEach {
+    it.options.encoding = "UTF-8"
+    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
+        it.options.release.set(targetJavaVersion)
+    }
+}
+
+java {
+    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+    if (JavaVersion.current() < javaVersion) {
+        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    }
+    withSourcesJar()
+}
+
+jar {
+    from("LICENSE") {
+        rename { "${it}_${project.archivesBaseName}" }
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        create("mavenJava", MavenPublication) {
+            artifactId = project.archives_base_name
+            from components.java
+        }
+    }
+    repositories {
+        // publishing repositories
+    }
+}
+
+// ily spotless
+spotless {
+    java {
+        target 'src/*/java/**/*.java'
+        licenseHeader '/**\n * Copyright (c) TheBreakery by MrBreakNFix\n * \n * @file $FILE\n */\n\n'
+        googleJavaFormat().aosp()
+        removeUnusedImports()
+        endWithNewline()
+
+        importOrder(
+                'static all', // static imports
+                '',
+                'java', // Java standard library
+                'javax',
+                '',
+                'com', 'net', 'org', // tld's
+                '',
+                '\\#com.mrbreaknfix' // '#' for non-static imports
+        )
+    }
+}
+
+tasks.named('spotlessJava') {
+    dependsOn generatePacketRegistry, generatePacketNameMap
+}

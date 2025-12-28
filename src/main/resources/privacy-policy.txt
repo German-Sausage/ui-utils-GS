@@ -1,0 +1,43 @@
+Privacy Policy for UI Utils Mod
+
+Effective Date: April 12, 2025
+
+1. Introduction
+
+This Privacy Policy outlines the data collection practices associated with the UI Utils Mod (hereinafter referred to as "the Mod"). By installing and using the Mod, you agree to the terms and conditions of this Privacy Policy.
+
+2. Data Collection
+
+The Mod collects certain data that is automatically transmitted to our servers, including:
+- Mod Version: The version of the UI Utils Mod installed on the user's system.
+- Minecraft Version: The version of Minecraft being used in conjunction with the Mod.
+- UUID: A unique identifier generated for each user to distinguish between users for usage tracking purposes.
+
+This data is collected periodically for internal purposes.
+
+3. Data Usage
+
+The data collected through the Mod is used to help us improve the Mod and monitor its usage. Specific purposes may include:
+- Analyzing trends and performance.
+- Improving the user experience and functionality of the Mod.
+
+4. Data Storage and Security
+
+The data is transmitted to and stored securely on our servers. We take reasonable measures to protect the data from unauthorized access, including the aforementioned data.
+
+5. Data Sharing
+
+We do not share, sell, or rent the data collected by the Mod to any third parties. The data is used solely for internal purposes related to the Mod’s functionality and improvement.
+
+6. Changes to This Privacy Policy
+
+We may update this Privacy Policy at any time. Any changes to this Privacy Policy will be contain within the latest build of UI-Utils, with the updated version reflected at the top of this document.
+
+7. Contact Information
+
+For inquiries or concerns regarding this Privacy Policy, please contact me at:
+mrbreaknfix@ui-utils.com
+
+8. Acknowledgment
+
+By using the UI Utils Mod, you acknowledge that you have read and understood this Privacy Policy and agree to the collection and use of data as described above.

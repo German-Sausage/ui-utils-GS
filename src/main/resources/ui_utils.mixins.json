@@ -1,0 +1,28 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.mrbreaknfix.ui_utils.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "ClientConnectionMixin",
+    "CrashReportMixin",
+    "FileCacheAccessor",
+    "HandledScreenMixin",
+    "KeyboardMixin",
+    "MinecraftClientAccessor",
+    "MinecraftClientMixin",
+    "MouseMixin",
+    "PlayerSkinProviderAccessor",
+    "PlayerSkinProviderMixin",
+    "ScreenMixin",
+    "WindowMixin",
+    "accessor.ClientConnectionAccessor",
+    "accessor.ClientPlayNetworkHandlerAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "mixins": [
+    "YggdrasilAuthenticationServiceMixin"
+  ]
+}
