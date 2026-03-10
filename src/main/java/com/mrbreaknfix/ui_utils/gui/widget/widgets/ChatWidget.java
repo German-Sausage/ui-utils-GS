@@ -21,8 +21,8 @@ public class ChatWidget extends TextInputWidget {
 
     @Override
     public void onEnter() {
-        mc.getSoundManager()
-                .play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+        //mc.getSoundManager()
+        //        .play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0F));
         if (this.getTextOrDefault().isEmpty() || this.getInput().equals("Input Chat / Command"))
             return;
         if (mc.player == null) return;

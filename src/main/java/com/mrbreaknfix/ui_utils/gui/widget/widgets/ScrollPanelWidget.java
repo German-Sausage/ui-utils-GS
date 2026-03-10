@@ -332,8 +332,8 @@ public class ScrollPanelWidget extends Widget implements Scrollable, Typeable, C
                     mouseX - (x + paddingLeft), mouseY - (y + paddingTop) + scrollY, button);
 
             if (target instanceof Noisy) {
-                mc.getSoundManager()
-                        .play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                //mc.getSoundManager()
+                //        .play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             }
         } else {
             if (focusedContentWidget != null) {
